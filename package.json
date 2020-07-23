@@ -1,8 +1,12 @@
 {
-  "name": "fractal",
-  "version": "1.0.0",
+  "name": "@beaucollins/fractal",
+  "version": "0.0.0",
   "description": "",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/beaucollins/fractal.git"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepack": "tsc"
