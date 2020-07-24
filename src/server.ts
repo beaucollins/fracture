@@ -1,8 +1,8 @@
 import { createHmac } from 'crypto';
-import { IncomingMessage, OutgoingHttpHeaders, IncomingHttpHeaders } from 'http';
-import { Parser, Result, isSuccess, failure, mapSuccess, success, isFailure, mapFailure } from '../parse';
-import { collectBuffers } from '../client/response-handler';
-import { jsonResponse } from '.';
+import { IncomingMessage, OutgoingHttpHeaders, IncomingHttpHeaders, ServerResponse } from 'http';
+import { Parser, Result, isSuccess, failure, mapSuccess, success, isFailure, mapFailure } from './parse';
+import { Readable } from 'stream';
+import { collectBuffers } from './client/response-handler';
 
 export type Response = Readonly<[number, OutgoingHttpHeaders, NodeJS.ReadableStream]>;
 export type Request = Readonly<{
@@ -17,6 +17,86 @@ export type Responder<T> = (context: T, request: Request) => Promise<Response>|R
 export type Handler = (request: Request) => Promise<Result<Response, Request>>|Result<Response, Request>;
 export type RequestHandler<T, B> = (context: T, body: Promise<B>, request: Request) => Response|Promise<Response>;
 export type SignedJSONHandler<T, B> = RequestHandler<T, [('signed'|'unsigned'), B]>;
+
+export type Endpoint = (request: IncomingMessage, response: ServerResponse) => Response|Promise<Response>;
+
+export function serve(handler: Handler, defaultHandler: (req: Request) => Response|Promise<Response> = notFound): Endpoint {
+    return async (req: IncomingMessage, res: ServerResponse) => {
+        const request: Request = {
+            request: req,
+            method: req.method ?? 'GET',
+            url: req.url ?? '/',
+            headers: req.headers,
+        };
+        const result = await mapFailure(
+            await handler(request),
+            async () => success(await defaultHandler(request))
+        );
+
+        const [status, headers, stream] = result.value;
+        res.writeHead(status, headers);
+        stream.pipe(res);
+        return result.value;
+    }
+}
+
+export function jsonResponse(
+    status: number,
+    headers: OutgoingHttpHeaders,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    json: any
+): Response {
+    const body = Buffer.from(JSON.stringify(json));
+    const stream = Readable.from([body]);
+    return [
+        status,
+        {
+            ...headers,
+            'content-type': 'application/json',
+            'content-length': body.length,
+        },
+        stream
+    ];
+}
+
+function notFound(): Response {
+    return jsonResponse(404, {}, {status: 'not-found'});
+}
+
+export function sendJson<T>(encoder: (context: T, request: Request) => [number, OutgoingHttpHeaders, any]): Responder<T> {
+    return (context, request) => {
+        const [status, headers, data] = encoder(context, request);
+        return jsonResponse(status, headers, data);
+    }
+}
+
+export function method<T extends ('GET'|'POST')>(method: T): Route<T> {
+    return req => req.method === method ? success(method) : failure(req, `method is ${req.method}`)
+}
+
+export function exactPath<T extends string>(path: T): Route<T> {
+    return req => req.url === path ? success(path) : failure(req, `Path ${req.url} is not ${path}`)
+}
+
+export function always<T>(value: T): () => T {
+    return () => value;
+}
+
+export function log(label: string, handler: Endpoint): Endpoint {
+    return async (req, res) => {
+        const time = Date.now();
+        const response = await handler(req, res);
+        const [status] = response;
+        const executionTime = Date.now();
+        res.on('close', () => {
+            console.warn(
+                '%s %s %s %s %d => response in %d ms, closed in %d ms',
+                (new Date()).toISOString(), label, req.method, req.url, status, executionTime - time, Date.now() - time
+            );
+        })
+        return response;
+    }
+}
 
 /**
  * Combines multiple routes, executing the first to return a success result.
@@ -133,11 +213,15 @@ export function parseJson<C,T>(parser: Parser<any, T>, handler: RequestHandler<C
  * - If signature is provided and is valid, handler is called with Promise<['signed', any]>.
  * - If signature is invalid the Promise is reject.d
  *
- * @param secret Shared secret used for HMAC digest computation.
- * @param signature Function that returns the signature for the request
+ * @param signature Shared secret used for HMAC digest computation.
+ * @param verifySignature Function that returns the signature for the request
  * @param bodyHandler Endpoint handler that receives the content [(signed|unsigned), any]
  */
-export function readSignedJson<T, B>(secret: string, signature: (context: T, request: Request) => void | null | string, bodyHandler: SignedJSONHandler<T, B>): Responder<T> {
+export function readSignedJson<T, B>(
+    signature: (context: T, request: Request) => void | null | string,
+    verifySignature: (signature: string, body: Buffer, request: Request) => boolean,
+    bodyHandler: SignedJSONHandler<T, B>
+  ):Responder<T> {
     return (context, request) =>
         bodyHandler(
             context,
@@ -145,17 +229,17 @@ export function readSignedJson<T, B>(secret: string, signature: (context: T, req
                 const json = JSON.parse(buffer.toString('utf8'));
                 const sig = signature(context, request);
                 if (sig == null) {
-                    return ['unsigned', json];
+                  return ['unsigned', json];
                 }
 
-                if (checkSignature(buffer, secret, sig)) {
-                    return ['signed', json];
+                if (verifySignature(sig, buffer, request)) {
+                  return ['signed', json];
                 }
                 throw new Error('Invalid signature');
             } ),
             request
         )
-}
+  }
 
 export default function checkSignature(buffer: Buffer, secret: string, signature: string): boolean {
     const hmac = createHmac('sha256', secret);
