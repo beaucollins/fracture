@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "jest",
-    "prepack": "tsc"
+    "clean": "rm -fr ./dist",
+    "prepack": "npm run -s clean && tsc"
   },
   "author": "",
   "license": "ISC",
