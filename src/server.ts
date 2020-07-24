@@ -241,7 +241,7 @@ export function readSignedJson<T, B>(
         )
   }
 
-export default function checkSignature(buffer: Buffer, secret: string, signature: string): boolean {
+export function checkSignature(buffer: Buffer, secret: string, signature: string): boolean {
     const hmac = createHmac('sha256', secret);
     hmac.update(buffer);
     const digest = hmac.digest('base64');
