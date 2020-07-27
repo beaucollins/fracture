@@ -12,14 +12,46 @@ export type Request = Readonly<{
     headers: Readonly<IncomingHttpHeaders>
 }>
 
+/**
+ * A Route is a function that receives a Request and returns a success with the route context
+ * information _or_ a failure with the original request.
+ */
 export type Route<T> = (req: Request) => Promise<Result<T,Request>>|Result<T,Request>;
+
+/**
+ * Given a matched Route<T> context and a Request, returns a Response to be served.
+ */
 export type Responder<T> = (context: T, request: Request) => Promise<Response>|Response;
+
+/**
+ * Givne a Request, returns a Success of the Response or a Failure of teh originoal Request.
+ * Effectively the combination of a Route<T> and a Responder<T>
+ */
 export type Handler = (request: Request) => Promise<Result<Response, Request>>|Result<Response, Request>;
+
+/**
+ * Given a context T, body Promise<B> and a Request resolves a Response. This is the interface
+ * for reading request bodies and probably can be renamed to make that clearer.
+ */
 export type RequestHandler<T, B> = (context: T, body: Promise<B>, request: Request) => Response|Promise<Response>;
+
+/**
+ * A RequestHandler that identifies a body a is signed or unsigned.
+ */
 export type SignedJSONHandler<T, B> = RequestHandler<T, [('signed'|'unsigned'), B]>;
 
+/**
+ * Interface for integrating with Node's HTTP lib. Receives an http.IncomingMessage and http.ServerResponse
+ * and returns the Promise<Response> to be written to the response.
+ */
 export type Endpoint = (request: IncomingMessage, response: ServerResponse) => Response|Promise<Response>;
 
+/**
+ * Creates a Node http server request handler.
+ *
+ * @param handler The HTTP Request handler
+ * @param defaultHandler Handler to use when no handler is identified
+ */
 export function serve(handler: Handler, defaultHandler: (req: Request) => Response|Promise<Response> = notFound): Endpoint {
     return async (req: IncomingMessage, res: ServerResponse) => {
         const request: Request = {
@@ -40,6 +72,14 @@ export function serve(handler: Handler, defaultHandler: (req: Request) => Respon
     }
 }
 
+/**
+ * Creates a Response to be served with the given status and headers.
+ *
+ * @param status
+ * @param headers
+ * @param json
+ * @return Response
+ */
 export function jsonResponse(
     status: number,
     headers: OutgoingHttpHeaders,
@@ -59,10 +99,17 @@ export function jsonResponse(
     ];
 }
 
+/**
+ * JSON response of 404 and body {status: 'not-found'}
+ */
 function notFound(): Response {
     return jsonResponse(404, {}, {status: 'not-found'});
 }
 
+/**
+ * Creates a Responder<T> than uses the `encoder` to generate the response.
+ * @param encoder Function to transform the context T and request into JSON Response args
+ */
 export function sendJson<T>(encoder: (context: T, request: Request) => [number, OutgoingHttpHeaders, any]): Responder<T> {
     return (context, request) => {
         const [status, headers, data] = encoder(context, request);
@@ -70,10 +117,18 @@ export function sendJson<T>(encoder: (context: T, request: Request) => [number, 
     }
 }
 
+/**
+ * Create a route that matches a given request method.
+ * @param method Method to match
+ */
 export function method<T extends ('GET'|'POST')>(method: T): Route<T> {
     return req => req.method === method ? success(method) : failure(req, `method is ${req.method}`)
 }
 
+/**
+ * Creates a route that matches the exact path e.g. `/users/find`
+ * @param path Literal string to match
+ */
 export function exactPath<T extends string>(path: T): Route<T> {
     return req => req.url === path ? success(path) : failure(req, `Path ${req.url} is not ${path}`)
 }
@@ -82,6 +137,11 @@ export function always<T>(value: T): () => T {
     return () => value;
 }
 
+/**
+ * Wraps an Endpoint to add logging
+ * @param label Label to use in logged output
+ * @param handler Endpoint with logging
+ */
 export function log(label: string, handler: Endpoint): Endpoint {
     return async (req, res) => {
         const time = Date.now();
@@ -135,6 +195,20 @@ export function route<T>(route: Route<T>, responder: Responder<T>): Handler {
         );
 }
 
+/**
+ * Combines multipe routing contexts into a single context object based on the keys.
+ *
+ * @example
+ *
+ *   routeContext({ method: method('POST'), path: exactPath('/some/path)})
+ *
+ * Matches a request for `POST /some/path` and the context will be of type:
+ *
+ *   type { method: 'POST', path: '/some/path'}
+ *
+ * @param route
+ * @param responder
+ */
 export function routeContext<T extends Record<string, unknown>>(
     route: {[K in keyof T]: Route<T[K]>},
     responder: Responder<T>
