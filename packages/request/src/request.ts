@@ -15,7 +15,6 @@ export type ApiResponse<O> = {
     request: RequestOptions,
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ApiRequest<T, R=any> = (options: T) => Promise<ApiResponse<R>>;
 
 export type ApiResponseType<T> = T extends ApiResponse<infer U> ? U : never;
