@@ -1,11 +1,3 @@
-# `serve`
+# `@fracture/serve`
 
-> TODO: description
-
-## Usage
-
-```
-const serve = require('serve');
-
-// TODO: DEMONSTRATE API
-```
+A strongly typed HTTP server.

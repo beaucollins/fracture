@@ -1,11 +1,4 @@
-# `request`
+# `@frature/request`
 
-> TODO: description
+A strongly typed HTTP/S client.
 
-## Usage
-
-```
-const request = require('request');
-
-// TODO: DEMONSTRATE API
-```
