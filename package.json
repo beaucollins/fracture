@@ -8,9 +8,7 @@
     "url": "git://github.com/beaucollins/fractal.git"
   },
   "scripts": {
-    "test": "jest",
-    "clean": "rm -fr ./dist",
-    "prepack": "npm run -s clean && tsc"
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",

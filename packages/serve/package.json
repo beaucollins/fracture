@@ -18,7 +18,8 @@
     "url": "git+https://github.com/beaucollins/fractal.git"
   },
   "scripts": {
-    "prepack": "npm run -s tsc",
+    "prepack": "npm run -s clean && npm run -s tsc",
+    "clean": "rm -fr ./lib",
     "test": "echo \"Error: run tests from root\" && exit 1",
     "tsc": "tsc"
   },
