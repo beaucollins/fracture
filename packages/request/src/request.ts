@@ -1,3 +1,4 @@
+import * as parse from '@fracture/parse';
 import { IncomingMessage } from 'http';
 import { encode, ParsedUrlQueryInput } from 'querystring';
 import { format } from 'util';
@@ -5,7 +6,6 @@ import { request as createRequest, RequestOptions } from 'https';
 import * as response from './response-handler';
 import * as request from './request-handler';
 import * as build from './request-builder';
-import * as parse from '../parse';
 
 export { response, request, build, parse };
 
