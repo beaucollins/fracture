@@ -1,6 +1,6 @@
 {
   "name": "@fracture/serve",
-  "version": "0.2.0-alpha.1",
+  "version": "0.2.0-alpha.2",
   "description": "> TODO: description",
   "author": "Beau Collins <beau@collins.pub>",
   "homepage": "https://github.com/beaucollins/fractal#readme",
@@ -30,7 +30,7 @@
     "url": "https://github.com/beaucollins/fractal/issues"
   },
   "dependencies": {
-    "@fracture/parse": "^0.2.0-alpha.1"
+    "@fracture/parse": "^0.2.0-alpha.2"
   },
   "gitHead": "2027db1d97228ecd85c1497b3199975b6e0e7d73"
 }
