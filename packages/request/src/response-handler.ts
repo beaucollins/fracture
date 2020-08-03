@@ -1,5 +1,5 @@
 import { IncomingMessage } from 'http';
-import { Result, Parser, failure, success, mapParser, mapFailure } from '../parse';
+import { Result, Parser, failure, success, mapParser, mapFailure } from '@fracture/parse';
 
 export type ResponseHandler<T> = (response: IncomingMessage, resolve: (result: T) => void, reject: (error: Error) => void) => void;
 
