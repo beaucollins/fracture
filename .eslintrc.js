@@ -1,4 +1,4 @@
-
+// eslint-disable-next-line no-undef
 module.exports = {
     "env": {
         "browser": true,
@@ -6,7 +6,8 @@ module.exports = {
     },
     "extends": [
         "eslint:recommended",
-        "plugin:@typescript-eslint/recommended"
+        "plugin:@typescript-eslint/recommended",
+        "plugin:json/recommended"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -14,8 +15,11 @@ module.exports = {
         "sourceType": "module"
     },
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "eslint-plugin-json",
+        "markdown"
     ],
     "rules": {
+        "json/*": ["error", { allowComments: true }]
     }
 };
