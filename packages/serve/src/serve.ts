@@ -1,6 +1,6 @@
 import { Parser, Result, isSuccess, failure, mapSuccess, success, isFailure, mapFailure } from '@fracture/parse';
-import { createHmac } from 'crypto';
 import { IncomingMessage, OutgoingHttpHeaders, IncomingHttpHeaders, ServerResponse } from 'http';
+import { createHmac } from 'crypto';
 import { Readable } from 'stream';
 
 export type Response = Readonly<[number, OutgoingHttpHeaders, NodeJS.ReadableStream]>;
