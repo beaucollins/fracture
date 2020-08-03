@@ -6,6 +6,9 @@
   "homepage": "https://github.com/beaucollins/fractal#readme",
   "license": "ISC",
   "main": "lib/parse.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "directories": {
     "lib": "lib",
     "test": "__tests__"
@@ -25,5 +28,6 @@
   },
   "bugs": {
     "url": "https://github.com/beaucollins/fractal/issues"
-  }
+  },
+  "gitHead": "2027db1d97228ecd85c1497b3199975b6e0e7d73"
 }
