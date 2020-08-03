@@ -38,5 +38,7 @@ jobs:
 
       - run: npm ci
 
+      - run: npx lerna bootstrap
+
       - name: Build
-        run: npm run tsc
+        run: npx lerna run tsc
