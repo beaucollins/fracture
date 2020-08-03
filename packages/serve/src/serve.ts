@@ -82,7 +82,6 @@ export function serve(handler: Handler, defaultHandler: (req: Request) => Respon
 export function jsonResponse(
     status: number,
     headers: OutgoingHttpHeaders,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     json: any
 ): Response {
     const body = Buffer.from(JSON.stringify(json));
