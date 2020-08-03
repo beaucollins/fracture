@@ -1,0 +1,36 @@
+{
+  "name": "@fracture/serve",
+  "version": "0.2.0-alpha.2",
+  "description": "> TODO: description",
+  "author": "Beau Collins <beau@collins.pub>",
+  "homepage": "https://github.com/beaucollins/fractal#readme",
+  "license": "ISC",
+  "main": "lib/serve.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beaucollins/fracture.git"
+  },
+  "scripts": {
+    "prepack": "npm run -s clean && npm run -s tsc",
+    "clean": "rm -fr ./lib",
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "tsc": "tsc"
+  },
+  "bugs": {
+    "url": "https://github.com/beaucollins/fracture/issues"
+  },
+  "dependencies": {
+    "@fracture/parse": "^0.2.0-alpha.2"
+  },
+  "gitHead": "2027db1d97228ecd85c1497b3199975b6e0e7d73"
+}

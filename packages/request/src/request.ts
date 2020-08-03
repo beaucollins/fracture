@@ -1,3 +1,4 @@
+import { Result, isSuccess } from '@fracture/parse';
 import { IncomingMessage } from 'http';
 import { encode, ParsedUrlQueryInput } from 'querystring';
 import { format } from 'util';
@@ -5,9 +6,8 @@ import { request as createRequest, RequestOptions } from 'https';
 import * as response from './response-handler';
 import * as request from './request-handler';
 import * as build from './request-builder';
-import * as parse from '../parse';
 
-export { response, request, build, parse };
+export { response, request, build };
 
 export type ApiResponse<O> = {
     result: O,
@@ -15,7 +15,6 @@ export type ApiResponse<O> = {
     request: RequestOptions,
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ApiRequest<T, R=any> = (options: T) => Promise<ApiResponse<R>>;
 
 export type ApiResponseType<T> = T extends ApiResponse<infer U> ? U : never;
@@ -49,7 +48,7 @@ export function apiRequest<T, O>(buildRequest: build.RequestBuilder<T>, handleRe
                 createRequest(
                     options,
                     response => handleResponse(response, asApiResponse(options, response, resolve), reject)
-                )
+                ).on('error', reject)
             );
         });
     }
@@ -205,13 +204,13 @@ export function logStatus<T>(response: ApiResponse<T>): ApiResponse<T> {
     return response;
 }
 
-export function requireValid<T>(result: parse.Result<T>): Promise<T> {
-	return parse.isSuccess(result)
+export function requireValid<T>(result: Result<T>): Promise<T> {
+	return isSuccess(result)
 		? Promise.resolve(result.value)
 		: Promise.reject(new Error(result.reason));
 }
 
-export function requireValidResponse<T>(response: ApiResponse<parse.Result<T>>): Promise<T> {
+export function requireValidResponse<T>(response: ApiResponse<Result<T>>): Promise<T> {
     return requireValid(response.result);
 }
 

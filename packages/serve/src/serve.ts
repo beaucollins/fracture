@@ -1,8 +1,7 @@
-import { createHmac } from 'crypto';
+import { Parser, Result, isSuccess, failure, mapSuccess, success, isFailure, mapFailure } from '@fracture/parse';
 import { IncomingMessage, OutgoingHttpHeaders, IncomingHttpHeaders, ServerResponse } from 'http';
-import { Parser, Result, isSuccess, failure, mapSuccess, success, isFailure, mapFailure } from './parse';
+import { createHmac } from 'crypto';
 import { Readable } from 'stream';
-import { collectBuffers } from './client/response-handler';
 
 export type Response = Readonly<[number, OutgoingHttpHeaders, NodeJS.ReadableStream]>;
 export type Request = Readonly<{
@@ -83,7 +82,6 @@ export function serve(handler: Handler, defaultHandler: (req: Request) => Respon
 export function jsonResponse(
     status: number,
     headers: OutgoingHttpHeaders,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     json: any
 ): Response {
     const body = Buffer.from(JSON.stringify(json));
@@ -241,10 +239,12 @@ export function both<A, B>(a: Route<A>, b: Route<B>): Route<[A,B]> {
 /**
  * Reads the request body into a buffer and resolves it.
  */
-function resolveBuffer(request: IncomingMessage): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-        collectBuffers()(request, buffers => resolve(Buffer.concat(buffers)), reject);
-    });
+async function resolveBuffer(request: IncomingMessage): Promise<Buffer> {
+    const buffers: Buffer[] = [];
+    for await (const data of request) {
+        buffers.push(data);
+    }
+    return Buffer.concat(buffers);
 }
 
 /**
