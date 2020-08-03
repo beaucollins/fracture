@@ -18,7 +18,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/beaucollins/fractal.git"
+    "url": "git+https://github.com/beaucollins/fracture.git"
   },
   "scripts": {
     "prepack": "npm run -s clean && npm run -s tsc",
@@ -27,7 +27,7 @@
     "tsc": "tsc"
   },
   "bugs": {
-    "url": "https://github.com/beaucollins/fractal/issues"
+    "url": "https://github.com/beaucollins/fracture/issues"
   },
   "dependencies": {
     "@fracture/parse": "^0.2.0-alpha.2"
