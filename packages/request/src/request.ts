@@ -49,7 +49,7 @@ export function apiRequest<T, O>(buildRequest: build.RequestBuilder<T>, handleRe
                 createRequest(
                     options,
                     response => handleResponse(response, asApiResponse(options, response, resolve), reject)
-                ).on('errer', reject)
+                ).on('error', reject)
             );
         });
     }
