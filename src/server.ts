@@ -24,7 +24,7 @@ export type Route<T> = (req: Request) => Promise<Result<T,Request>>|Result<T,Req
 export type Responder<T> = (context: T, request: Request) => Promise<Response>|Response;
 
 /**
- * Givne a Request, returns a Success of the Response or a Failure of teh originoal Request.
+ * Givne a Request, returns a Success of the Response or a Failure of the original Request.
  * Effectively the combination of a Route<T> and a Responder<T>
  */
 export type Handler = (request: Request) => Promise<Result<Response, Request>>|Result<Response, Request>;
@@ -36,7 +36,7 @@ export type Handler = (request: Request) => Promise<Result<Response, Request>>|R
 export type RequestHandler<T, B> = (context: T, body: Promise<B>, request: Request) => Response|Promise<Response>;
 
 /**
- * A RequestHandler that identifies a body a is signed or unsigned.
+ * A RequestHandler that identifies a body is signed or unsigned.
  */
 export type SignedJSONHandler<T, B> = RequestHandler<T, [('signed'|'unsigned'), B]>;
 
@@ -285,7 +285,7 @@ export function parseJson<C,T>(parser: Parser<any, T>, handler: RequestHandler<C
  *
  * - If no signature is provided, handler is called with Promise<['unsigned', body]>
  * - If signature is provided and is valid, handler is called with Promise<['signed', any]>.
- * - If signature is invalid the Promise is reject.d
+ * - If signature is invalid the Promise is rejected
  *
  * @param signature Shared secret used for HMAC digest computation.
  * @param verifySignature Function that returns the signature for the request
