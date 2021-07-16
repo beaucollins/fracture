@@ -1,4 +1,5 @@
 // eslint-disable-next-line no-undef
+const { readFileSync } = require('fs');
 module.exports = {
     "env": {
         "browser": true,
@@ -17,9 +18,13 @@ module.exports = {
     "plugins": [
         "@typescript-eslint",
         "eslint-plugin-json",
-        "markdown"
+        "markdown",
     ],
     "rules": {
         "json/*": ["error", { allowComments: true }]
-    }
+        "comma-dangle": ["error", "only-multiline"],
+        "brace-style": ["error", "1tbs", { "allowSingleLine": true }],
+        "curly": ["error", "multi-line"],
+        "no-console": "warn",
+      }
 };
