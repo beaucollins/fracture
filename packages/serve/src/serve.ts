@@ -59,9 +59,6 @@ const STATUSES = {
   // This means that the resource is now permanently located at another URI, specified by the Location: HTTP Response header. This has the same semantics as the 301 Moved Permanently HTTP response code, with the exception that the user agent must not change the HTTP method used: If a POST was used in the first request, a POST must be used in the second request.
   308: "Permanent Redirect",
 
-  400: "Bad Request",
-  404: "Not Found",
-
   // The server could not understand the request due to invalid syntax.
   400: "Bad Request",
   // Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response.
