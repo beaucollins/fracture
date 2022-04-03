@@ -31,17 +31,8 @@ export const withData = mapHandler(collectBuffers(), (buffers) =>
   Buffer.concat(buffers).toString("utf-8")
 );
 
-export const decodeJson = mapHandler(collectBuffers(), (buffers, res) => {
-  try {
-    return JSON.parse(Buffer.concat(buffers).toString("utf8"));
-  } catch (error) {
-    console.error(
-      "failed to parse",
-      res.statusCode,
-      Buffer.concat(buffers).toString("utf8")
-    );
-    throw error;
-  }
+export const decodeJson = mapHandler(collectBuffers(), (buffers) => {
+  return JSON.parse(Buffer.concat(buffers).toString("utf8"));
 });
 
 export function mapHandler<A, B>(
@@ -67,7 +58,7 @@ export function mapHandler<A, B>(
   };
 }
 
-function parseJson(raw: string): Result<any, string> {
+function parseJson(raw: string): Result<unknown, string> {
   try {
     return success(JSON.parse(raw));
   } catch (error) {

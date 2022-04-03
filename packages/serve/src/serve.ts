@@ -227,7 +227,6 @@ export function serve(
     );
 
     const [status, headers, stream] = result.value;
-    console.log("write headers", headers);
     res.writeHead(status, STATUSES[status], headers);
     stream.pipe(res);
     return result.value;
@@ -245,7 +244,7 @@ export function serve(
 export function jsonResponse(
   status: StatusCode,
   headers: OutgoingHttpHeaders,
-  json: any
+  json: unknown
 ): Response {
   const body = Buffer.from(JSON.stringify(json));
   const stream = Readable.from([body]);
@@ -275,7 +274,7 @@ export function sendJson<T>(
   encoder: (
     context: T,
     request: Request
-  ) => [StatusCode, OutgoingHttpHeaders, any]
+  ) => [StatusCode, OutgoingHttpHeaders, unknown]
 ): Responder<T> {
   return (context, request) => {
     const [status, headers, data] = encoder(context, request);
@@ -321,6 +320,7 @@ export function log(label: string, handler: Endpoint): Endpoint {
     const [status] = response;
     const executionTime = Date.now();
     res.on("close", () => {
+      // eslint-disable-next-line no-console
       console.warn(
         "%s %s %s %s %d => response in %d ms, closed in %d ms",
         new Date().toISOString(),
@@ -437,7 +437,9 @@ export function readBody<T>(
  *
  * @param bodyHandler R
  */
-export function readJson<T>(bodyHandler: RequestHandler<T, any>): Responder<T> {
+export function readJson<T>(
+  bodyHandler: RequestHandler<T, unknown>
+): Responder<T> {
   return (context, request) =>
     bodyHandler(
       context,
@@ -449,8 +451,8 @@ export function readJson<T>(bodyHandler: RequestHandler<T, any>): Responder<T> {
 }
 
 export function parseJson<C, T>(
-  parser: Parser<any, T>,
-  handler: RequestHandler<C, Result<any, T>>
+  parser: Parser<T, unknown>,
+  handler: RequestHandler<C, Result<T, unknown>>
 ): Responder<C> {
   return readJson<C>((context, body, request) =>
     handler(context, body.then(parser), request)
@@ -507,9 +509,9 @@ export function checkSignature(
   return signature == digest;
 }
 
-export function context<R extends Record<string, unknown>>(
-  matchers: { [K in keyof R]: Route<R[K]> }
-): Route<R> {
+export function context<R extends Record<string, unknown>>(matchers: {
+  [K in keyof R]: Route<R[K]>;
+}): Route<R> {
   return async (request) => {
     const matches = {} as R;
     for (const key in matchers) {

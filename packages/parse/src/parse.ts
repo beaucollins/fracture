@@ -22,13 +22,13 @@ export type ResultType<T> = T extends Parser<infer O, infer I>
   : never;
 export type ParserType<T> = T extends Parser<infer U, unknown> ? U : never;
 
-export function optional<O, I = any>(
+export function optional<O, I = unknown>(
   validator: Parser<O, I>
 ): Parser<null | O, I> {
   return (value) => (value === null ? success(null) : validator(value));
 }
 
-export function voidable<O, I = any>(
+export function voidable<O, I = unknown>(
   validator: Parser<O, I>
 ): Parser<undefined | O, I> {
   return (value) =>
@@ -51,14 +51,18 @@ export function isBoolean<I = unknown>(value: I): Result<boolean, I> {
   return typeof value === "boolean" ? success(value) : failTypeOf(value);
 }
 
+// allowing any here
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isAnyValue<I = unknown>(value: I): Success<any> {
   return success(value);
 }
 
 export function isObject<I = unknown>(
   value: I
-): Result<{ [key: string]: any }, I> {
-  return typeof value === "object" ? success(value) : failTypeOf(value);
+): Result<Record<string, unknown>, I> {
+  return typeof value === "object" && value != null
+    ? success(value)
+    : failTypeOf(value);
 }
 
 export function isArray<I = unknown>(value: I): Result<unknown[], I> {
@@ -67,13 +71,18 @@ export function isArray<I = unknown>(value: I): Result<unknown[], I> {
     : failure(value, "value is not Array.isArray");
 }
 
-export function objectOf<T extends { [key: string]: any }, I = unknown>(
-  validators: { [K in keyof T]: Parser<T[K], I> }
-): Parser<T, I> {
-  return function (value: any) {
+export function objectOf<
+  T extends { [key: string]: unknown },
+  I = unknown
+>(validators: { [K in keyof T]: Parser<T[K], I> }): Parser<T, I> {
+  return function (value: I) {
     const result = {} as T;
+    if (!isObject(value)) {
+      return failure<I>(value, "Not an object");
+    }
+    const obj = value as Record<string, unknown>;
     for (const key in validators) {
-      const validated = validators[key](value ? value[key] : undefined);
+      const validated = validators[key](obj ? obj[key] : undefined);
       if (isFailure(validated)) {
         return keyedFailure(value, key, validated);
       }
@@ -84,7 +93,7 @@ export function objectOf<T extends { [key: string]: any }, I = unknown>(
 }
 
 export function indexedObjectOf<T, I>(
-  parser: Parser<T, any>
+  parser: Parser<T, unknown>
 ): Parser<{ [key: string]: T }, I> {
   return function (value) {
     const result = {} as { [key: string]: T };

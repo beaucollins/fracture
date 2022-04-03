@@ -15,7 +15,9 @@ export type ApiResponse<O> = {
   request: RequestOptions;
 };
 
-export type ApiRequest<T, R = any> = (options: T) => Promise<ApiResponse<R>>;
+export type ApiRequest<T, R = unknown> = (
+  options: T
+) => Promise<ApiResponse<R>>;
 
 export type ApiResponseType<T> = T extends ApiResponse<infer U> ? U : never;
 
@@ -87,14 +89,14 @@ export function getJson<T>(
  */
 export function putJson<T>(
   buildRequest: build.RequestBuilder<T>,
-  encoder: (options: T) => any
-): (config: T) => Promise<ApiResponse<any>> {
+  encoder: (options: T) => unknown
+): (config: T) => Promise<ApiResponse<unknown>> {
   return jsonEncodedRequest(buildRequest, encoder, response.decodeJson);
 }
 
-export function sendJson<T, O = any>(
+export function sendJson<T, O = unknown>(
   buildRequest: build.RequestBuilder<T>,
-  encoder: (options: T) => any,
+  encoder: (options: T) => unknown,
   responseHandler: response.ResponseHandler<O>
 ): (config: T) => Promise<ApiResponse<O>> {
   return jsonEncodedRequest(buildRequest, encoder, responseHandler);
@@ -110,7 +112,7 @@ export function sendURLEncoded<T, O>(
 
 export function jsonEncodedRequest<T, O>(
   buildRequest: build.RequestBuilder<T>,
-  encoder: (options: T) => any,
+  encoder: (options: T) => unknown,
   handleResponse: response.ResponseHandler<O>
 ): (config: T) => Promise<ApiResponse<O>> {
   return requestWithBody(
@@ -222,6 +224,7 @@ export function requireStatusCode<T>(
  * @return ApiResponse<T>
  */
 export function logStatus<T>(response: ApiResponse<T>): ApiResponse<T> {
+  // eslint-disable-next-line no-console
   console.warn("Response, Status", response.response.statusCode);
   return response;
 }
