@@ -36,7 +36,7 @@ export function asApiResponse<T>(
 /**
  *
  * Given options T and api response of type O, uses three functions to handle
- * the pipeline of sending an HTTP Request and receving a HTTP Respose.
+ * the pipeline of sending an HTTP Request and receiving a HTTP Response.
  *
  * @param buildRequest RequestBuilder<T>
  * @param handleRequest RequestHandler<T>
