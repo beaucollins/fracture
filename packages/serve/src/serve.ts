@@ -142,10 +142,14 @@ const STATUSES = {
   511: "Network Authentication Required",
 };
 
-type StatusCode = keyof typeof STATUSES;
+export type StatusCode = keyof typeof STATUSES;
 
 export type Response = Readonly<
-  [StatusCode, OutgoingHttpHeaders, NodeJS.ReadableStream]
+  [
+    status: StatusCode,
+    headers: OutgoingHttpHeaders,
+    responseStream: NodeJS.ReadableStream
+  ]
 >;
 export type Request = Readonly<{
   request: IncomingMessage;
@@ -313,31 +317,39 @@ export function always<T>(value: T): () => T {
  * @param label Label to use in logged output
  * @param handler Endpoint with logging
  */
-export function log(label: string, handler: Endpoint): Endpoint {
+export function log(
+  label: string,
+  handler: Endpoint,
+  shouldLog: (req: Request, status: StatusCode) => boolean
+): Endpoint {
   return async (req, res) => {
     const time = Date.now();
     const response = await handler(req, res);
     const [status] = response;
     const executionTime = Date.now();
-    res.on("close", () => {
-      // eslint-disable-next-line no-console
-      console.warn(
-        "%s %s %s %s %d => response in %d ms, closed in %d ms",
-        new Date().toISOString(),
-        label,
-        req.method,
-        req.url,
-        status,
-        executionTime - time,
-        Date.now() - time
-      );
-    });
+    shouldLog(req, status) &&
+      res.on("close", () => {
+        // eslint-disable-next-line no-console
+        console.warn(
+          "%s %s %s %s %d => response in %d ms, closed in %d ms",
+          new Date().toISOString(),
+          label,
+          req.method,
+          req.url,
+          status,
+          executionTime - time,
+          Date.now() - time
+        );
+      });
     return response;
   };
 }
 
-export function logger(label: string): (endpoint: Endpoint) => Endpoint {
-  return (endpoint) => log(label, endpoint);
+export function logger(
+  label: string,
+  shouldLog: (req: Request, status: StatusCode) => boolean
+): (endpoint: Endpoint) => Endpoint {
+  return (endpoint) => log(label, endpoint, shouldLog);
 }
 
 /**
