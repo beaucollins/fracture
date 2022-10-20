@@ -320,7 +320,7 @@ export function always<T>(value: T): () => T {
 export function log(
   label: string,
   handler: Endpoint,
-  shouldLog: (req: Request, status: StatusCode) => boolean
+  shouldLog: (req: IncomingMessage, status: StatusCode) => boolean
 ): Endpoint {
   return async (req, res) => {
     const time = Date.now();
@@ -347,7 +347,7 @@ export function log(
 
 export function logger(
   label: string,
-  shouldLog: (req: Request, status: StatusCode) => boolean
+  shouldLog: (req: IncomingMessage, status: StatusCode) => boolean
 ): (endpoint: Endpoint) => Endpoint {
   return (endpoint) => log(label, endpoint, shouldLog);
 }

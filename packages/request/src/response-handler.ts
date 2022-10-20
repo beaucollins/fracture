@@ -6,6 +6,7 @@ import {
   success,
   mapParser,
   mapFailure,
+  Failure,
 } from "@fracture/parse";
 
 export type ResponseHandler<T> = (
@@ -58,8 +59,13 @@ export function mapHandler<A, B>(
   };
 }
 
-function parseJson(raw: string): Result<unknown, string> {
+type JSONValue = unknown;
+
+function parseJson<I>(raw: I): Result<JSONValue, I> {
   try {
+    if (typeof raw !== "string") {
+      return failure(raw, "Expected JSON input of string");
+    }
     return success(JSON.parse(raw));
   } catch (error) {
     if (error instanceof Error) {
@@ -69,7 +75,7 @@ function parseJson(raw: string): Result<unknown, string> {
   }
 }
 
-export function withParser<O, I>(parse: Parser<O, I>): Parser<O, string> {
+export function withParser<O>(parse: Parser<O, unknown>): Parser<O, unknown> {
   return mapParser(parseJson, (value) =>
     mapFailure(parse(value), (failure) => ({ ...failure, value }))
   );

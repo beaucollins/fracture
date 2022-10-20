@@ -61,7 +61,7 @@ export function isObject<I = unknown>(
   value: I
 ): Result<Record<string, unknown>, I> {
   return typeof value === "object" && value != null
-    ? success(value)
+    ? success(value as Record<string, unknown>)
     : failTypeOf(value);
 }
 
@@ -82,7 +82,7 @@ export function objectOf<
     }
     const obj = value as Record<string, unknown>;
     for (const key in validators) {
-      const validated = validators[key](obj ? obj[key] : undefined);
+      const validated = validators[key]((obj ? obj[key] : undefined) as I);
       if (isFailure(validated)) {
         return keyedFailure(value, key, validated);
       }
@@ -95,7 +95,7 @@ export function objectOf<
 export function indexedObjectOf<T, I>(
   parser: Parser<T, unknown>
 ): Parser<{ [key: string]: T }, I> {
-  return function (value) {
+  return function (value): Result<{ [key: string]: T }, I> {
     const result = {} as { [key: string]: T };
     if (value === null || value == undefined) {
       return failure(value, "value is null or undefined");
@@ -106,11 +106,11 @@ export function indexedObjectOf<T, I>(
     for (const key in value) {
       const child = parser(value[key]);
       if (isFailure(child)) {
-        return keyedFailure(value, key, child);
+        return keyedFailure<I>(value, key, child as Failure<I>);
       }
       result[key] = child.value;
     }
-    return success(result);
+    return success(result as { [key: string]: T });
   };
 }
 
