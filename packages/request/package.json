@@ -1,7 +1,7 @@
 {
   "name": "@fracture/request",
   "version": "0.3.0",
-  "description": "> TODO: description",
+  "description": "HTTP client built on @fracture/parse",
   "author": "Beau Collins <beau@collins.pub>",
   "homepage": "https://github.com/beaucollins/fractal#readme",
   "license": "ISC",

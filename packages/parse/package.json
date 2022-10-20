@@ -1,7 +1,7 @@
 {
   "name": "@fracture/parse",
   "version": "0.3.0",
-  "description": "> TODO: description",
+  "description": "type safe parsing library",
   "author": "Beau Collins <beau@collins.pub>",
   "homepage": "https://github.com/beaucollins/fractal#readme",
   "license": "ISC",
