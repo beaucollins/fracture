@@ -6,7 +6,6 @@ import {
   success,
   mapParser,
   mapFailure,
-  Failure,
 } from "@fracture/parse";
 
 export type ResponseHandler<T> = (
