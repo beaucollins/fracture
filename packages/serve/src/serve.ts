@@ -336,6 +336,10 @@ export function log(label: string, handler: Endpoint): Endpoint {
   };
 }
 
+export function logger(label: string): (endpoint: Endpoint) => Endpoint {
+  return (endpoint) => log(label, endpoint);
+}
+
 /**
  * Combines multiple routes, executing the first to return a success result.
  *
