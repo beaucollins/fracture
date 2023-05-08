@@ -1,4 +1,5 @@
-name: 'Verify'
+# Let's see if it works
+name: "Verify"
 
 on: [push]
 
